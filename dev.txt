@@ -1,0 +1,13 @@
+conf 
+  |- httpd.conf 主机配置文件
+  |- mime.types 媒体类型表
+system
+  |-
+modules
+  |- 
+
+
+NetBox程序编程注意事项
+
+1.socket.wsc在多个线程同时请求时就会创建多个执行环境，导致环境变量数据无法准确保持，使用NetBox.contents保存全局数据
+2. 程序结束之前无法重启服务器，例如sleep，所以慎用sleep编程

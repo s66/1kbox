@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gbk"/>
+<title></title>
+<style>
+body{font:16px/1.5 tahoma,arial,宋体,sans-serif;}
+h2{
+    font-size: 28px;
+    border-bottom: 1px solid #E0E0E0;
+    height: 50px;
+    line-height: 50px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}    
+</style>
+<script></script>
+</head>
+<body>
+<h2>1kbox api</h2>
+<ul>
+	<li>
+		<h3>$1k</h3>
+		<ul>
+			<li>$1k.console(msg) 向控制台输出信息</li>
+			<li>$1k.alert(msg) 弹出信息</li>
+		</ul>
+	</li>
+    <li>
+        <h3>Fs.js</h3>
+        <ul>
+            <li>Fs.codepage(codepage) 设置Fs默认编码</li>
+            <li>Fs.read(path) 读取文件，path为文件的物理绝对路径</li>
+            <li>Fs.readText(path, codepage) 读取文本文件</li>
+            <li>Fs.writeText(path, content, codepage) 写文本文件</li>
+            <li>Fs.exists(path) 判断文件是否存在</li>
+            <li>Fs.delete(path) 删除文件</li>
+            <li>Fs.createFolder(path) 创建文件夹</li>
+            <li>Fs.getFolder(path) 获取文件夹</li>
+            <li>Fs.getFile(path) 获取文件</li>
+            <li>Fs.getExt(path) 获取文件扩展名</li>
+            <li>Fs.syncText(targetPath, text, codepage) 同步文本文件</li>
+            <li>Fs.syncFile(targetPath, sourcePath) 同步文件</li>
+            <li>Fs.syncFolder(targetPath, sourcePath, filter) 根据过滤器同步文件
+            <pre> filter为过滤器，过滤条件可以是文件或者文件夹名称
+            filter = {
+                matchFile: /\.js$/, //匹配以.js结尾的文件
+                skipFile: /\.res\.js$/, //跳过以.res.js结尾的文件
+                matchFolder: /.+/, //匹配所有文件夹
+                skipFolder: /\.res$/ //跳过以.res结尾的文件夹
+            };
+            </pre></li>
+            <li>Fs.eachFiles(from[, filter][, deep], fn) 遍历操作指定文件夹中的文件,filter,deep默认false</li>
+        </ul>
+    </li>
+    <li><h3>Packer.js</h3>
+        <ul>
+            <li>Packer.pack(jscode) 压缩js代码</li>
+        </ul>
+    </li>
+   
+    <li><h3>Zero.js</h3>
+        <ul>
+            <li>Zero.codepage(codepage) 设置模版引擎默认编码</li>
+            <li>Zero.getContent(path) 调用模版引擎生成html代码</li>
+        </ul>
+        <h3>模版引擎扩展语法</h3>
+        <ul>
+            <li>$PATH 模版引擎当前操作的文件路径</li>
+            <li>$inc(path) 相对当前文件导入其他文件</li>
+            <li>$require(path) 相对当前文件加载js模块</li>
+            <li>$mappath(path) 获取文件的绝对物理路径</li>
+            <li>$push(text) 插入字符串</li>
+            <li>$each(items, func) 遍历操作items</li>
+        </ul>
+    </li>
+    <li><h3>Request.js</h3>
+        <ul>
+            <li>---</li>
+        </ul>
+    </li>
+    <li><h3>Response.js</h3>
+        <ul>
+            <li>Response.setHeader(key, val) 添加响应头</li>
+            <li>Response.setBuffer(size) 设置缓存大小</li>
+            <li>Response.flush() 立即输出缓存内容</li>
+            <li>Response.end() 结束输出</li>
+            <li>Response.write(text) 输出字符串内容</li>
+            <li>Response.BinaryWrite(content) 输出2进制内容</li>
+        </ul>
+    </li>
+    <li><h3>Sys.js</h3>
+        <ul>
+            <li>Sys.wait(ms) 服务器进入等待，单位为毫秒</li>
+            <li>Sys.loop(fn, ms, count) 服务器循环执行指定的代码，fn为执行的函数，ms为暂停的间隔，count为执行次数</li>
+        </ul>
+    </li>
+    <li>
+        <h3>其他</h3>
+        <ul>
+            <li>$HTTPPATH 当前网站域名</li>
+            <li>$ROOTPATH 当前网站根目录</li>
+            <li>$CODEPAGE 当前网站编码</li>
+            <li>$GET 客户端get方式发送的数据</li>
+        </ul>
+    </li>
+</ul>
+<br>
+<br>
+<br>
+</body>
+</html>

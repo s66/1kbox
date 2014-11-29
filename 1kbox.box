@@ -1,0 +1,160 @@
+#language jscript
+
+var
+SERVER_NAME = '1kbox',
+TCPD = {};
+
+loadConfig();
+
+Shell.Service.Desktop = true; //允许桌面交互
+Shell.Service.RunService(SERVER_NAME, SERVER_NAME, "1kbox-server2.02");//运行服务
+
+function OnServiceStart(){ //服务初始化时触发事件  
+    for(var port in $ports){
+        TCPD[port] = new ActiveXObject('NetBox.TcpServer');//创建tcp服务器
+        //TCPD[port].MaxWorkers = 1;//单线程
+        //TCPD[port].Timeout = 1;//空闲线程1分钟清空
+        if(TCPD[port].Create('', port, 'system/socket.wsc') == 0){
+            TCPD[port].start();
+        }else{
+            alert('['+ port +']端口已经被其他程序占有!','服务器启动失败！');
+        }
+    }
+}
+function OnServiceStop(){ //服务停止时触发事件
+	for(var port in TCPD){
+		TCPD[port].Close();
+	}
+}
+function OnServicePause(){ //暂停服务时触发事件
+    for(var port in TCPD){
+		TCPD[port].Stop();
+	}
+}
+function OnServiceResume(){ //继续服务时触发
+	for(var port in TCPD){
+		TCPD[port].Start();
+	}
+}
+
+function loadConfig(){ //加载配置信息
+    try{
+        var
+        httpd = Function('return '+ text('conf/httpd.conf'))(),
+        ROOTPATH = httpd.ROOTPATH;
+        ROOTPATH = fixpath(~ROOTPATH.indexOf(':') ? ROOTPATH : NetBox.FileSystem.MapPath(ROOTPATH));
+        $ports = function(Hosts){
+            var 
+            ports = {},
+            HostsFormat = {};
+            
+            forEach(Hosts, function(host, i){
+                var
+                httppath = host.domain.replace('#', ':'),
+                path = host.path || host.domain;
+                path = fixpath(~path.indexOf(':') ? path : ROOTPATH +'/'+ path);
+                
+                HostsFormat[httppath] = {
+                    ROOTPATH: path,
+                    HTTPPATH: httppath,
+                    CODEPAGE: host.codepage || 936,
+                    ENGINE: function(engine){
+                        var ret = {};
+                        forEach(engine, function(type){
+                            type && (ret[type] = 1);
+                        });
+                        return ret;
+                    }((host.engine || '').split(' '))
+                };
+                ports[httppath.split(':')[1] || '80'] = 1; //添加到端口列表，用于添加虚拟主机
+            });
+            
+            httpd.HOST = HostsFormat;
+            return ports;
+        }(httpd.HOST);
+        
+        httpd.ROOTPATH = ROOTPATH;
+        httpd.DIRINDEX = httpd.DIRINDEX.split(' ');
+        httpd.MIMETYPE = loadMimeTypes();
+        NetBox('httpd') = toJson(httpd);
+        NetBox('main') = text('system/core/main.js');
+    }catch(e){
+         alert('httpd.conf错误:'+ e.message +'，请检查配置文件！');
+    }
+    function fixpath(path){
+        return path.replace(/\\/g, '/');
+    }
+}
+function loadMimeTypes(){ //加载mimetype
+    var 
+    types = {};
+    text('conf/mime.types').replace(/^(\S+)[\t ]+([^\r\n]+)/mg, function(match, type, exts){
+        forEach(exts.split(' '), function(ext, i){
+            types[ext] = type;
+        });
+    });
+    return types;
+}
+function text(path, codepage){ //读取文本
+    var 
+    file = new ActiveXObject('NetBox.File'),
+    text = '';
+    try{
+        file.open(path);
+        codepage && (file.codepage = codepage);
+        text = file.readText();
+    }catch(e){
+        alert([
+            '读取文件'+ path +'失败！', 
+            '错误提示：'+e.message
+        ].join('\n\n'));
+    }
+    file.Close();
+    return text;   
+}
+function toJson(obj){ //JSON.stringify
+	switch(typeof obj){
+		case 'object':
+            if(obj == null){
+                return obj;
+            }
+            var _json = [];
+            if({}.toString.apply(obj) == '[object Array]'){
+                for(var e = 0, l = obj.length; e < l; e++){
+                    _json[e] = toJson(obj[e]);
+                }
+                return '['+ _json.join(',') +']';
+            }
+            for(e in obj){
+                _json.push('"'+ e +'":'+ toJson(obj[e]));
+            }
+            return '{'+ _json.join(',') +'}';
+		case 'string':
+            return '"'+ obj.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n') +'"';
+		case 'number':
+		case 'boolean':
+		case 'undefined':
+            return obj;
+	}
+	return obj;
+}
+function forEach(obj, fn, context){
+    if(obj.length){
+        for(var i = 0; i < obj.length; i++){
+            if(fn.call(context, obj[i], i)){
+                break;
+            }
+        }
+    }else{
+        for(var i in obj){
+            if(fn.call(context, obj[i], i)){
+                break;
+            }
+        }
+    }
+}
+function alert(msg){
+    Shell.MsgBox(msg, '系统提示');
+    NetBox.sleep(1);
+    Shell.Halt(0);
+}

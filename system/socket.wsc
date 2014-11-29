@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<component>
+<public><method name="OnAccept" /></public>
+<script language="jscript">
+<![CDATA[
+//由于多个线程并行，每个线程都是独立的执行环境，只能使用NetBox.Contents保存全局数据
+
+
+function OnAccept(socket){
+    try{
+        $1k._routes(socket);
+    }catch(e){
+        socket.write(e.message);
+    }
+    socket.write('..');
+    socket.close();
+}
+
+!function(){
+    try{
+        Function(NetBox('main'))();
+    }catch(e){
+        var Shell = new ActiveXObject('Shell');
+        Shell.MsgBox('入口模块错误:'+ e.message, '系统提示');
+        NetBox.sleep(1);
+        Shell.Halt(0);
+    }
+}();
+
+]]>
+</script>
+</component>

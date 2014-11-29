@@ -1,0 +1,52 @@
+//生成响应逻辑，读取文件调用模板引擎
+
+//服务器模块
+$1k.module.register('Fs');
+$1k.module.register('Sys');
+$1k.module.register('Request');
+$1k.module.register('Response');
+$1k.module.register('Zero');
+$1k.module.register('Packer');
+$1k.debug = 1;
+$1k.onConnect = function(context){
+    Zero.codepage(context.CODEPAGE);
+    Fs.codepage(context.CODEPAGE);
+    Response.init({
+        code: context.CODE,
+        socket: context.socket,
+        codepage: context.CODEPAGE,
+        mimetype: context.MIMETYPE
+    });
+    $1k.site.init();
+    $1k.site.onConnect();
+    switch(context.CODE){ //根据路由状态实现不同的处理
+        case 200: //直接返回文件
+            if(+context.lastModified){
+                Response.setHeader('Last-Modified', context.lastModified);
+            }
+            Response.BinaryWrite(Fs.read(context.FILEPATH, context.CODEPAGE));
+            break;
+        case 201: //调用模板引擎    
+            Request.init({
+                header: context.HEADER,
+                query: context.GET,
+                form: context.POST,
+                data: context.DATA
+            });
+            //设定模板环境变量
+            $HTTPPATH = context.HTTPPATH;
+            $ROOTPATH = context.ROOTPATH;
+            $CODEPAGE = context.CODEPAGE;
+            $GET = Request.getQuery();
+            $ZERO = new Zero({ codepage: context.CODEPAGE, output: Response.write});
+            $ZERO.inc(context.FILEPATH);
+            break;
+        case 418:
+            Response.write(Fs.readText('etc/api.html', 936));
+            break;
+    }
+    $1k.site.onClose();
+    Response.end();
+    $1k.Error.show();
+    $1k.global.clear();
+};
